@@ -19,6 +19,7 @@ add_executable(burst_test
 )
 target_include_directories(burst_test PRIVATE src)
 add_test(NAME tokenizer_tests COMMAND burst_test)
+set_tests_properties(tokenizer_tests PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 option(TOKENBURST_ENABLE_CUDA "Build with CUDA support" OFF)
 
