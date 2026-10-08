@@ -1,56 +1,92 @@
 // src/main.cpp
-// Burst — CLI entry point.
+// TokenBurst — CLI entry point.
 
 #include <cstdio>
 #include <cstdlib>
-#include <vector>
 #include <string>
+#include <vector>
 
-#ifdef BURST_CUDA
-extern "C" void vocab_lookup(
-    const int* h_word_ids,
-    const float* h_vocab_emb,
-    float* h_output,
-    int n_tokens,
-    int vocab_size,
-    int dim
-);
-#endif
+#include "tokenizer.h"
+#include "vocab.h"
+
+using namespace tokenburst;
+
+static void print_usage() {
+    printf("TokenBurst v0.2\n");
+    printf("Usage:\n");
+    printf("  tokenburst --vocab <path> \"text to encode\"\n");
+    printf("  tokenburst --vocab <path> --file <path>\n");
+    printf("\n");
+}
 
 int main(int argc, char** argv) {
-    printf("Burst v0.2.0 — CUDA Tokenizer\n");
-
-#ifdef BURST_CUDA
-    printf("Build: CUDA enabled\n");
-
-    // Small demo: 10 tokens, 5-word vocab, 4-dim embeddings
-    const int n_tokens = 10;
-    const int vocab_size = 5;
-    const int dim = 4;
-
-    int word_ids[n_tokens] = {0, 1, 2, 0, 3, 4, 1, 2, 3, 0};
-    float vocab[vocab_size * dim] = {
-        1.0f, 1.1f, 1.2f, 1.3f,   // word 0
-        2.0f, 2.1f, 2.2f, 2.3f,   // word 1
-        3.0f, 3.1f, 3.2f, 3.3f,   // word 2
-        4.0f, 4.1f, 4.2f, 4.3f,   // word 3
-        5.0f, 5.1f, 5.2f, 5.3f,   // word 4
-    };
-    float output[n_tokens * dim];
-
-    vocab_lookup(word_ids, vocab, output, n_tokens, vocab_size, dim);
-
-    printf("\nToken -> Embedding:\n");
-    for (int i = 0; i < n_tokens; i++) {
-        int wid = word_ids[i];
-        printf("  token %d (word %d): [%.1f, %.1f, %.1f, %.1f]\n",
-               i, wid,
-               output[i*dim+0], output[i*dim+1],
-               output[i*dim+2], output[i*dim+3]);
+    if (argc < 2) {
+        print_usage();
+        return 1;
     }
-#else
-    printf("Build: CPU only (rebuild with -DBURST_ENABLE_CUDA=ON for GPU)\n");
-#endif
+
+    std::string vocab_path;
+    std::string text;
+    std::string file_path;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "--vocab" && i + 1 < argc) {
+            vocab_path = argv[++i];
+        } else if (arg == "--file" && i + 1 < argc) {
+            file_path = argv[++i];
+        } else {
+            text = arg;
+        }
+    }
+
+    if (vocab_path.empty()) {
+        fprintf(stderr, "error: --vocab <path> required\n");
+        return 1;
+    }
+
+    Tokenizer tok;
+    if (!tok.load(vocab_path)) {
+        fprintf(stderr, "error: failed to load vocab\n");
+        return 1;
+    }
+
+    // Read text from file if provided
+    if (!file_path.empty()) {
+        FILE* f = fopen(file_path.c_str(), "rb");
+        if (!f) {
+            fprintf(stderr, "error: cannot open %s\n", file_path.c_str());
+            return 1;
+        }
+        fseek(f, 0, SEEK_END);
+        long sz = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        text.resize(sz);
+        fread(&text[0], 1, sz, f);
+        fclose(f);
+    }
+
+    if (text.empty()) {
+        fprintf(stderr, "error: no input text\n");
+        return 1;
+    }
+
+    // Encode
+    std::vector<int64_t> tokens = tok.encode(text);
+
+    // Print tokens
+    printf("Input length: %zu bytes\n", text.size());
+    printf("Token count:  %zu\n", tokens.size());
+    printf("Tokens: ");
+    for (size_t i = 0; i < tokens.size(); i++) {
+        printf("%lld", (long long)tokens[i]);
+        if (i + 1 < tokens.size()) printf(", ");
+    }
+    printf("\n");
+
+    // Round-trip test
+    std::string decoded = tok.decode(tokens);
+    printf("\nDecoded: %s\n", decoded.c_str());
 
     return 0;
 }
