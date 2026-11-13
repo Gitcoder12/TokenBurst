@@ -93,3 +93,24 @@ Apache 2.0. See LICENSE.
 ## Author
 
 Dharavath Satvik — @Gitcoder12
+
+---
+
+## Project handbook
+
+- [Activity log](ACTIVITY_LOG.md) · [Feature upgrade plan](FEATURE_UPGRADE_PLAN.md)
+- [Company and team fit](COMPANY_FIT.md) · [README explanation draft](README_ADDENDUM_DRAFT.md)
+- [README quality checklist](README_QUALITY_CHECKLIST.md)
+- [Contributing](CONTRIBUTING.md) · [Agent instructions](AGENTS.md) · [Agent skills](SKILLS.md)
+
+## Understanding the project
+
+### In plain language
+
+A C++ tokenizer prototype that turns text into token IDs for language-model pipelines.
+
+### Technical and research view
+
+Describe the supported CPU tokenizer command, the required vocabulary file and actual output format. Do not call the CUDA kernel part of tokenization if the main program does not invoke it.
+
+For future work, see [FEATURE_UPGRADE_PLAN.md](FEATURE_UPGRADE_PLAN.md), [ACTIVITY_LOG.md](ACTIVITY_LOG.md), [COMPANY_FIT.md](COMPANY_FIT.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
