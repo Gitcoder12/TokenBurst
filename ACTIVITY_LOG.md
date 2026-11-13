@@ -17,3 +17,12 @@ Current audit found the README CLI examples omit a required vocabulary argument,
 | YYYY-MM-DD | name | link | paths and benchmark | exact versions and dataset | pass / fail / not run | evidence |
 
 Never publish speedup numbers without exact hardware, dataset, warmup, repetition count, correctness test and reproducible command.
+
+## Portfolio documentation rollout — 2026-11-13
+
+- Documentation PR: https://github.com/Gitcoder12/TokenBurst/pull/2
+- Added project-specific feature plan, company-fit mapping, beginner/technical README explanation and README checklist.
+- Added scoped agent/skills guidance and contributor workflow where appropriate.
+- README now explains the user-facing workflow and the technical/research scope while retaining current limitations.
+- Validation: documentation/source review only; no application runtime test or deployment is claimed by this docs PR.
+- Status: draft PR, not merged.
