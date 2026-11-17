@@ -106,3 +106,22 @@ This section supplements the maintainer-authored README above; it does not repla
 - Record provider/model versions, prompt/configuration, seeds, latency/cost methodology, environment and reproducible test outputs for evaluation claims.
 - Mark unverified metrics and unsupported provider capabilities as unknown/unverified.
 - See [MODEL_AUDIT_ROUTER.md](MODEL_AUDIT_ROUTER.md) for independent model review instructions.
+
+---
+
+## Engineering Audit & Handover — 2026-11-17
+
+**Reviewed commit:** `b4be2e4bec2610c1427db5b591e77deb51aabb1e` (`main`). Static inspection covered `src/tokenizer.cpp`, `src/vocab.cpp`, and `tests/test_tokenizer.cpp`; tests were not executed.
+
+### Confirmed findings
+- The inspected encoder splits input into UTF-8 character substrings and repeatedly merges adjacent strings using token IDs inferred from the vocabulary. It does not show the standard GPT-2 byte-level pre-tokenization and merge-rank implementation.
+- Unknown tokens are silently skipped in `Tokenizer::encode()`, so encoding followed by decoding can lose input text.
+- The current tests mostly assert that selected strings produce non-empty token lists and that one sample sentence compresses below its character count. They do not establish compatibility with GPT-2/tiktoken token IDs or correctness over arbitrary Unicode input.
+- The README's throughput and 39x speedup figures were not reproduced in this audit. CUDA source files exist, but the inspected CPU tokenizer path does not establish that the advertised GPU benchmark uses equivalent tokenization semantics.
+
+### Next actions
+1. Implement the exact target tokenizer specification, including pre-tokenization, byte fallback, and canonical merge ranks.
+2. Return explicit unknown-token errors or a lossless fallback; never silently drop input bytes.
+3. Add golden compatibility tests against a trusted reference tokenizer and publish reproducible benchmark scripts, hardware, compiler flags, and datasets.
+
+**Verification status:** static source/test inspection only; build, tests, reference-tokenizer compatibility, CUDA equivalence, and performance claims remain unverified.
