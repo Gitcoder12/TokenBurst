@@ -125,3 +125,10 @@ This section supplements the maintainer-authored README above; it does not repla
 3. Add golden compatibility tests against a trusted reference tokenizer and publish reproducible benchmark scripts, hardware, compiler flags, and datasets.
 
 **Verification status:** static source/test inspection only; build, tests, reference-tokenizer compatibility, CUDA equivalence, and performance claims remain unverified.
+
+---
+
+## Examples Used
+- Tokenizing a short sentence into token IDs
+- Processing a large document collection in batches
+- Comparing CPU and GPU tokenization throughput
