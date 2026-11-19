@@ -132,3 +132,27 @@ This section supplements the maintainer-authored README above; it does not repla
 - Tokenizing a short sentence into token IDs
 - Processing a large document collection in batches
 - Comparing CPU and GPU tokenization throughput
+
+
+---
+
+## Comparison with Existing Open-Source Projects
+
+TokenBurst is documented as a C++ tokenizer for LLM pipelines, with CPU parallelism, optional CUDA acceleration and streaming ambitions. The following projects are established tokenizer implementations and important correctness/performance baselines.
+
+| Project | Established focus | Relationship to TokenBurst |
+|---|---|---|
+| [tiktoken](https://github.com/openai/tiktoken) | Fast BPE tokenizer implementation used for OpenAI model tokenization | A key compatibility and performance reference; TokenBurst should compare token IDs only when implementing the same encoding specification and vocabulary. |
+| [Hugging Face Tokenizers](https://github.com/huggingface/tokenizers) | High-performance tokenization library with many algorithms and language bindings | A mature general-purpose tokenizer library; TokenBurst's proposed distinction is a C++/CUDA-oriented pipeline and streaming/batch throughput. |
+| [SentencePiece](https://github.com/google/sentencepiece) | Language-independent subword tokenizer and training toolkit | A widely used tokenizer framework with different algorithm/configuration choices; it is a reference for tokenizer design, not necessarily a drop-in GPT-2 BPE equivalent. |
+
+### Where TokenBurst is different
+- **C++ implementation:** the project aims to keep tokenization close to native code rather than rely on a Python-level orchestration loop.
+- **GPU acceleration direction:** the README describes optional CUDA kernels and batch/streaming use cases for LLM data pipelines.
+- **Pipeline-oriented CLI:** the tool is designed to tokenize text files and batches as well as short strings.
+
+### Where established projects are stronger
+tiktoken, Hugging Face Tokenizers and SentencePiece have mature algorithm implementations, compatibility tests and broad adoption. TokenBurst's current engineering audit found that its inspected encoder does not demonstrate standard GPT-2 byte-level pre-tokenization/merge-rank behavior, and its advertised speedup was not reproduced in that audit.
+
+### Correctness and benchmark requirements
+First implement and document the exact tokenizer specification, including byte handling, pre-tokenization, merge ranks and unknown-token behavior. Add golden tests against the reference tokenizer and Unicode/losslessness tests. Benchmark only equivalent outputs with published hardware, compiler flags, dataset, thread settings and warm-up protocol. Do not claim a speedup until correctness and reproducibility are established. This is a scope comparison, not a validated performance ranking.
